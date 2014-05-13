@@ -1,0 +1,17 @@
+#! /usr/bin/perl -w
+
+use esmith::Build::CreateLinks qw(:all);
+
+# Links for the panel
+panel_link("dhcpd", "manager");
+
+#link to servi2adjust and template2expand
+for  my $event (qw(
+     console-save
+     conf-dhcpmanager
+     post-upgrade
+     bootstrap-console-save))
+{
+    templates2events("/etc/dhcpd.conf", $event);
+    safe_symlink("restart", "root/etc/e-smith/events/$event/services2adjust/dhcpd");
+}

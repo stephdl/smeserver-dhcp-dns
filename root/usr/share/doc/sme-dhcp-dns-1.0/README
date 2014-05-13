@@ -1,0 +1,84 @@
+Title:
+	DHCP to DNS synchronising service for SME Server
+
+Contributed by:
+	Rick Jones <rick@activeservice.co.uk>
+	Active Service <www.activeservice.co.uk>
+
+Version:
+	1.0 release 1
+Date:
+	March 2005
+
+Applicable to:
+	SME Server version 6.0.x
+	(not tested under 6.5, and may not be necessary)
+
+Acknowledgements:
+	The idea for this was inspired by Michael Stella's utility
+	(www.thismetalsky.org), although I didn't use any of his code
+	directly. This is mainly because all the mechanism for dynamically
+	building config files already exists in SME's template system, so
+	most of Michael's code was irrelevant or needed re-working.
+	But thanks for the idea anyway Michael!
+
+
+Purpose
+
+The standard configuration of tinydns in SME Server 6 supplies hard-coded
+names for all IP addresses in the local subnet range. These take the form
+"pc-00001", "pc-00002", etc. This particularly affects reverse DNS of local
+clients, so local IPs do not resolve to the names they used when registering
+in DHCP.
+
+This contrib uses the state of DHCP leases to build the tinydns data file,
+so that DNS resolves the registered names and IPs correctly in both
+directions. It also continuously monitors the leases, and updates DNS
+whenever there is a change. Any statically defined IPs (using MAC addresses
+in the Hostnames panel) are also correctly resolved.
+
+
+Name conflicts
+
+It's quite possible in a dynamic environment (e.g. WiFi with various laptops
+coming and going) that name clashes will arise; either a new client with the
+same name as a statically pre-configured one, or simply two clients with the
+same name. In this case, conflicting clients will have numeric suffixes added
+to their DNS names so that the DNS entries are unique.
+
+If a DNS client doesn't report a name, then the MAC address is used as the
+host for the DNS entry.
+
+Thanks go to Placido Sanchez for discovering these problems, as well as
+suggestions and substantial testing.
+
+
+Extras
+
+In addition, reverse DNS lookup of the SME server's own IP correctly
+resolves to its hostname, rather than "pc-0000x".
+
+Installing this RPM also enables the use of Cname entries for sub-domain
+names. To do this, use the Hostnames manager panel to add a hostname of type
+"Remote". In the IP address field you can enter the actual hostname of the
+machine hosting the sub-domain as an alternative to its IP address (this RPM
+removes the usual validation for an IP entry). Saving the changes will then
+write a Cname record into the DNS data file.
+
+This feature is useful if you host one or more sub-domains on remote sites
+(e.g. an Internet hosting provider) and you need to point to the actual
+server. A Cname can be more reliable than an IP, as the provider may change
+his IP addresses but is less likely to change the actual host names.
+
+
+Comments
+
+I hope this works well for you. If you find any bugs or problems, or have
+any comments, please email contribs@activeservice.co.uk.
+
+
+Rick Jones
+
+
+
+

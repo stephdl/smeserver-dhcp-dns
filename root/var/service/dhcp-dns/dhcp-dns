@@ -1,0 +1,32 @@
+#!/usr/bin/perl
+
+# Monitor the leases file for changes
+my $version = '1.0';
+
+use strict;
+
+# interval between checking for changes to the file
+my $sleeptime = 15;
+
+# DHCP lease file 
+my $leasefile = '/var/lib/dhcpd/dhcpd.leases';
+
+print "Starting DHCP to DNS synchronisation monitor $version\n";
+print "contributed by Active Service (Rick Jones)\n";
+print "Bugs and comments to contribs\@activeservice.co.uk\n\n";
+
+my $oldtime = 0;
+
+do {
+    my $newtime = (stat($leasefile))[9];
+    my $difftime = $newtime - $oldtime;
+    if ($difftime > 0) {
+    	if ($oldtime) {
+	    	print "DHCP lease change, $difftime secs since previous\n";
+    	} else {
+    		print "Initial update\n";
+    	}
+	$oldtime = $newtime;
+	system '/sbin/e-smith/signal-event', 'dhcp-change';
+    }
+} while (sleep $sleeptime);
