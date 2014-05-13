@@ -10,5 +10,5 @@ for  my $event (qw( dhcp-change ))
     safe_symlink("restart", "root/etc/e-smith/events/$event/services2adjust/dnscache");
     safe_symlink("sigusr1", "root/etc/e-smith/events/$event/services2adjust/tinydns");
     # actions to perform
-    safe_symlink("../actions/dnscache-change", "root/etc/e-smith/events/dhcp-change/20dnscache-change");
+    safe_symlink("../actions/dnscache-change", "root/etc/e-smith/events/dhcp-change/S20dnscache-change");
 }
