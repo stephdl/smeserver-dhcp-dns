@@ -2,16 +2,13 @@
 
 use esmith::Build::CreateLinks qw(:all);
 
-# Links for the panel
-panel_link("dhcpd", "manager");
 
 #link to servi2adjust and template2expand
-for  my $event (qw(
-     console-save
-     conf-dhcpmanager
-     post-upgrade
-     bootstrap-console-save))
+for  my $event (qw( dhcp-change ))
 {
-    templates2events("/etc/dhcpd.conf", $event);
-    safe_symlink("restart", "root/etc/e-smith/events/$event/services2adjust/dhcpd");
+    # services to launch on event
+    safe_symlink("restart", "root/etc/e-smith/events/$event/services2adjust/dnscache");
+    safe_symlink("sigusr1", "root/etc/e-smith/events/$event/services2adjust/tinydns");
+    # actions to perform
+    safe_symlink("../actions/dnscache-change", "root/etc/e-smith/events/dhcp-change/20dnscache-change");
 }
