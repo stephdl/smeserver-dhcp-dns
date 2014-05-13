@@ -13,4 +13,4 @@ for  my $event (qw( dhcp-change ))
     safe_symlink("../actions/dnscache-change", "root/etc/e-smith/events/dhcp-change/S20dnscache-change");
 }
 #creation of the supervise daemontools
-safe_symlink("root/var/service/dhcp-dns/", "root/service");
+#dont_work#safe_symlink("root/var/service/dhcp-dns/", "root/service");
