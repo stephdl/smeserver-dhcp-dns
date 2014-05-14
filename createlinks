@@ -13,3 +13,5 @@ for  my $event (qw( dhcp-dns ))
     safe_symlink("../actions/dnscache-change", "root/etc/e-smith/events/dhcp-change/S20dnscache-change");
 }
 
+safe_symlink("daemontools", "root/etc/rc.d/init.d/dhcp-dns");
+service_link_enhanced("dhcp-dns", "S85", "7");
