@@ -78,7 +78,7 @@ rm -rf $RPM_BUILD_ROOT
 rm -f %{name}-%{version}-filelist
 /sbin/e-smith/genfilelist $RPM_BUILD_ROOT > %{name}-%{version}-filelist
 echo "%doc COPYING"  >> %{name}-%{version}-filelist
-%attr(755,dnslog,dnslog) /var/log/dhcp-dns/
+%attr(755,dnslog,dnslog) /var/log/dhcp-dns
 
 %clean
 cd ..
