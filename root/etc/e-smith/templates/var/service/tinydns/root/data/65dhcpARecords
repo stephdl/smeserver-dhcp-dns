@@ -1,0 +1,48 @@
+{
+    # we need perl-Text-DHCPparse rpm from Dag's repo
+    use Text::DHCPparse;
+
+    # we need perl-Date-Manip to convert to a unix timestamp
+    use Date::Manip qw /UnixDate/;
+   
+    # we need perl-Time-TAI64 for timestamp conversion
+    use Time::TAI64 qw /unixtai64/;
+
+    # copy of dhcpd.leases file to /tmp because working directly on the original
+    # is not a good idea
+    system "cat /var/lib/dhcpd/dhcpd.leases > /tmp/dhcpd.leases";
+      
+    # now we parse the leases
+    $return = leaseparse('/tmp/dhcpd.leases');
+   
+    # variable with local domain value (default is  mycompamy.local)
+    my $localdomain = get_local_domainname;
+
+    $OUT .= "# A records for dhcp hosts in $localdomain\n";
+
+    foreach (keys %$return) {
+        ($ip, $time, $mac, $name) = unpack("A17 A21 A19 A30", $return->{$_});
+
+        # sometimes $name is empty.. we want only non empty one
+        if ( $name gt " ") {
+            # we skip also ips already allocated
+            unless (exists $allocated_ips{$ip})
+            {
+                # Convert lease end time to the format expected as
+                # see:  http://cr.yp.to/djbdns/tinydns-data.html
+                my $ts = UnixDate($time, "%s");
+                my $endtai = unixtai64($ts);
+                $endtai =~ s/@//;
+
+                # Determine TTL
+                my $ttl = '';
+                $ttl = 0 unless ($ts <= time);
+
+                $OUT .= "=$name.$localdomain:$ip:$ttl:$endtai\n";
+            }
+            $allocated_ips{$ip} = 1;
+        }
+    }
+    # remove the temp file
+    system "rm -f /tmp/dhcpd.leases";
+}
