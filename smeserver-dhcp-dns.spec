@@ -13,7 +13,7 @@ Group: SMEserver/addon
 BuildRoot: %{_tmppath}/%{name}-buildroot
 BuildArchitectures: noarch
 BuildRequires: e-smith-devtools
-Requires: e-smith-release >= 8.0
+Requires: e-smith-release >= 9.0
 Requires: perl-Text-DHCPparse
 AutoReqProv: no
 
@@ -23,8 +23,10 @@ This eliminates the 'pc-0001' etc. default names.
 
 %changelog
 * Tue May 13 2014 stephane de Labrusse <stephdl@de-labrusse.fr> 1.1.0-1
-- First release for SME Server 8.0
-- Thanks to John Crisp
+- First release for SME Server 9.0
+- Thanks to John Crisp, Stefano Zamboni and Rick Jones
+- This contribs is made from the solution of Stefano Zamboni [SME:2388] 
+- and the original idea of Rick Jones.
 
 * Sun Mar 20 2005 Rick Jones <rick@activeservice.co.uk>
 - [1.0-1]
@@ -85,7 +87,8 @@ rm -rf %{name}-%{version}
 %preun
 
 %post
-/bin/ln -s /var/service/dhcp-dns/ /service
+#link to add dhcp-dns to daemontools as a daemon. Do not remove or fix for a better solution.
+/bin/ln -s /var/service/dhcp-dns/ /service >/dev/null 2>&1
 
 %postun
 
