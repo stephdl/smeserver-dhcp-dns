@@ -14,6 +14,7 @@ BuildRoot: %{_tmppath}/%{name}-buildroot
 BuildArchitectures: noarch
 BuildRequires: e-smith-devtools
 Requires: e-smith-release >= 8.0
+Requires: perl-Text-DHCPparse
 AutoReqProv: no
 
 %description
@@ -84,7 +85,7 @@ rm -rf %{name}-%{version}
 %preun
 
 %post
-
+/bin/ln -s /var/service/dhcp-dns/ /service
 
 %postun
 

@@ -1,32 +1,33 @@
 #!/usr/bin/perl
 
-# Monitor the leases file for changes
-my $version = '1.0';
+my $lease_file = "/var/lib/dhcpd/dhcpd.leases";
 
-use strict;
+# last modified time
+my $modtime = 0;
 
-# interval between checking for changes to the file
-my $sleeptime = 15;
+# seconds to wait
+my $update_freq = 15;
 
-# DHCP lease file 
-my $leasefile = '/var/lib/dhcpd/dhcpd.leases';
+###########################################################################
+# Main Loop
+while (1) {
 
-print "Starting DHCP to DNS synchronisation monitor $version\n";
-print "contributed by Active Service (Rick Jones)\n";
-print "Bugs and comments to contribs\@activeservice.co.uk\n\n";
+  # check the file's last updated time, if it's been changed, update
+  # the DNS and save the modified time.  This will ALWAYS run once - on
+  # startup, since $modtime starts at zero.
 
-my $oldtime = 0;
+  my @stats = stat ($lease_file);
+  if ($stats[9] > $modtime) {
+  
+  	$modtime = $stats[9];
 
-do {
-    my $newtime = (stat($leasefile))[9];
-    my $difftime = $newtime - $oldtime;
-    if ($difftime > 0) {
-    	if ($oldtime) {
-	    	print "DHCP lease change, $difftime secs since previous\n";
-    	} else {
-    		print "Initial update\n";
-    	}
-	$oldtime = $newtime;
-	system '/sbin/e-smith/signal-event', 'dhcp-change';
-    }
-} while (sleep $sleeptime);
+        system ("/usr/bin/sv 1 /service/tinydns");
+  }
+
+  # wait till next check time
+  sleep $update_freq;
+
+} # end main
+###########################################################################
+
+
