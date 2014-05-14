@@ -88,9 +88,11 @@ rm -rf %{name}-%{version}
 
 %post
 #link to add dhcp-dns to daemontools as a daemon. Do not remove or fix for a better solution.
-/bin/ln -s /var/service/dhcp-dns/ /service >/dev/null 2>&1
+/bin/ln -fs /var/service/dhcp-dns/ /service >/dev/null 2>&1
 
 %postun
+#remove the deamon
+rm -f /service/dhcp-dns
 
 %files -f %{name}-%{version}-filelist
 %defattr(-,root,root)
