@@ -24,7 +24,7 @@
         ($ip, $time, $mac, $name) = unpack("A17 A21 A19 A30", $return->{$_});
 
         # sometimes $name is empty.. we want only non empty one
-        if ( $name gt " ") {
+        if ( (defined $name) && (defined $ip)) {
             # we skip also ips already allocated
             unless (exists $allocated_ips{$ip})
             {
