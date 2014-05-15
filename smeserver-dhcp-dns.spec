@@ -1,6 +1,6 @@
 %define name smeserver-dhcp-dns
 %define version 1.1.1
-%define release 6
+%define release 7
 
 Summary: contrib to update dynamically the dns data
 Name: %{name}
@@ -22,7 +22,7 @@ Implementation of some features arround dhcp to dynamically update dns data file
 This eliminates the 'pc-0001' etc. default names.
 
 %changelog
-* Tue May 13 2014 stephane de Labrusse <stephdl@de-labrusse.fr> 1.1.0-1
+* Tue May 13 2014 stephane de Labrusse <stephdl@de-labrusse.fr> 1.1.0-7
 - First release for SME Server 9.0
 - Thanks to John Crisp, Stefano Zamboni and Rick Jones
 - This contribs is made from the solution of Stefano Zamboni [SME:2388] 
