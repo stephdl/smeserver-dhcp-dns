@@ -1,6 +1,6 @@
 %define name smeserver-dhcp-dns
 %define version 1.1.1
-%define release 3
+%define release 4
 
 Summary: contrib to update dynamically the dns data
 Name: %{name}
@@ -78,7 +78,7 @@ rm -rf $RPM_BUILD_ROOT
 rm -f %{name}-%{version}-filelist
 /sbin/e-smith/genfilelist $RPM_BUILD_ROOT > %{name}-%{version}-filelist
 echo "%doc COPYING"  >> %{name}-%{version}-filelist
-%attr(744,root,root) root/var/service/dhcp-dns/dhcp-dns
+#%attr(744,root,root) /var/service/dhcp-dns/dhcp-dns
 
 %clean
 cd ..

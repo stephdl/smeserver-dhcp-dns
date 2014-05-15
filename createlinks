@@ -15,3 +15,6 @@ for  my $event (qw( dhcp-dns ))
 
 safe_symlink("daemontools", "root/etc/rc.d/init.d/dhcp-dns");
 service_link_enhanced("dhcp-dns", "S85", "7");
+service_link_enhanced("dhcp-dns", "K25", "6");
+service_link_enhanced("dhcp-dns", "K25", "0");
+safe_symlink("root/var/service/dhcp-dns/", "root/service/dhcp-dns");
