@@ -78,6 +78,7 @@ rm -rf $RPM_BUILD_ROOT
 rm -f %{name}-%{version}-filelist
 /sbin/e-smith/genfilelist $RPM_BUILD_ROOT > %{name}-%{version}-filelist
 echo "%doc COPYING"  >> %{name}-%{version}-filelist
+%attr(744,root,root) /usr/bin/dhcp-dns
 
 %clean
 cd ..
@@ -87,12 +88,8 @@ rm -rf %{name}-%{version}
 %preun
 
 %post
-#link to add dhcp-dns to daemontools as a daemon. Do not remove or fix for a better solution.
-/bin/ln -fs /var/service/dhcp-dns/ /service >/dev/null 2>&1
 
 %postun
-#remove the deamon
-rm -f /service/dhcp-dns
 
 %files -f %{name}-%{version}-filelist
 %defattr(-,root,root)
