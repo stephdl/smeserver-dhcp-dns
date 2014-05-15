@@ -1,6 +1,6 @@
 %define name smeserver-dhcp-dns
 %define version 1.1.1
-%define release 5
+%define release 6
 
 Summary: contrib to update dynamically the dns data
 Name: %{name}
@@ -92,6 +92,6 @@ rm -rf %{name}-%{version}
 
 %files -f %{name}-%{version}-filelist
 %defattr(-,root,root)
-#%attr(744,root,root) /var/service/dhcp-dns/dhcp-dns
-%attr(755,root,root) /var/service/dhcp-dns/run
+%attr(750,root,root) /var/service/dhcp-dns/dhcp-dns
+%attr(750,root,root) /var/service/dhcp-dns/run
 
