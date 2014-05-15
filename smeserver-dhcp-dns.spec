@@ -78,8 +78,7 @@ rm -rf $RPM_BUILD_ROOT
 rm -f %{name}-%{version}-filelist
 /sbin/e-smith/genfilelist $RPM_BUILD_ROOT > %{name}-%{version}-filelist
 echo "%doc COPYING"  >> %{name}-%{version}-filelist
-#%attr(744,root,root) /var/service/dhcp-dns/dhcp-dns
-%attr(755,root,root) /var/service/dhcp-dns/run
+
 %clean
 cd ..
 rm -rf %{name}-%{version}
@@ -93,4 +92,6 @@ rm -rf %{name}-%{version}
 
 %files -f %{name}-%{version}-filelist
 %defattr(-,root,root)
+#%attr(744,root,root) /var/service/dhcp-dns/dhcp-dns
+%attr(755,root,root) /var/service/dhcp-dns/run
 
