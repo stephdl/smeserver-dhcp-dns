@@ -1,6 +1,6 @@
 %define name smeserver-dhcp-dns
 %define version 1.1.1
-%define release 2
+%define release 3
 
 Summary: contrib to update dynamically the dns data
 Name: %{name}
