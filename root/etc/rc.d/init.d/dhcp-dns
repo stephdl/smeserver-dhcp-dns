@@ -1,138 +1,87 @@
 #!/bin/sh
+### BEGIN INIT INFO
+# Provides: <dhcp-dns>
+# Required-Start: $local_fs $network $named $time $syslog
+# Required-Stop: $local_fs $network $named $time $syslog
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+# Description: <DESCRIPTION>
+### END INIT INFO
+ 
+SCRIPT='perl /var/service/dhcp-dns/dhcp-dns'
+RUNAS=root
+ 
+PIDFILE=/var/run/dhcp-dns.pid
+LOGFILE=/var/log/dhcp-dns.log
+NAME=dhcp-dns
 
-###########################################################################
-#
-# System V style init script.
-# Relies on runit utilities to do the real work.
-# It is assumed that init scripts will be linked to this script.
-#
-###########################################################################
-
-# Determine the service name and its service directory from $0
-
-prog=$(/bin/basename $0 | sed -e 's/^[SK][0-9][0-9]*//')
-SERVICE_DIR=/service/$prog
-
-###########################################################################
-
-# Source in the RedHat initscripts functions
-
-. /etc/rc.d/init.d/functions
-
-# The maximum amount of time to wait for a process to shut down, in seconds.
-SVWAIT=60
-
-start()
-{
-    /bin/echo -n $"Starting $prog:"
-    dirs=$1
-    if [ -d $1/log ]; then
-        dirs="$1/log $1"
-    fi
-    /usr/bin/sv u $dirs > /dev/null
-    if [ $? -ne 0 ]; then
-        failure "Starting $prog"
-    else
-        success "Starting $prog"
-    fi
-    /bin/echo
+start() {
+  if [ -f $PIDFILE ] && kill -0 $(cat $PIDFILE); then
+echo 'Service already running' >&2
+    return 1
+  fi
+echo 'Starting service…' >&2
+  local CMD="$SCRIPT &> \"$LOGFILE\" & echo \$!"
+  su -c "$CMD" $RUNAS > "$PIDFILE"
+  echo 'Service started' >&2
 }
 
-stop()
-{
-    /bin/echo -n $"Stopping $prog:"
-    /usr/bin/sv stop $1 > /dev/null
-    if [ $? -ne 0 ]; then
-        failure "Stopping $prog"
-    else
-        success "Stopping $prog"
-    fi
-    /bin/echo
+stop() {
+  if [ ! -f "$PIDFILE" ] || ! kill -0 $(cat "$PIDFILE"); then
+echo 'Service not running' >&2
+    return 1
+  fi
+echo 'Stopping service…' >&2
+  kill -15 $(cat "$PIDFILE") && rm -f "$PIDFILE"
+  echo 'Service stopped' >&2
 }
 
-# This function not only shuts the service down, but removes the /service
-# symlink and shuts down the logger. This should only be used during an
-# uninstall of the service in question.
-svdisable()
-{
-    /bin/echo -n $"Disabling $prog:"
-    stop $1
-    cd $1 && rm -f $1
-    dirs=.
-    if [ -e log ]; then
-        dirs="$dirs ./log"
-    fi
-    /usr/bin/sv d $dirs
-    /usr/bin/sv x $dirs
-    if [ $? -ne 0 ]; then
-        failure "Disabling $prog"
-    else
-        success "Disabling $prog"
-    fi
-    /bin/echo
+uninstall() {
+  echo -n "Are you really sure you want to uninstall this service? That cannot be undone. [yes|No] "
+  local SURE
+  read SURE
+  if [ "$SURE" = "yes" ]; then
+stop
+    rm -f "$PIDFILE"
+    echo "Notice: log file is not be removed: '$LOGFILE'" >&2
+    update-rc.d -f <NAME> remove
+    rm -fv "$0"
+  fi
 }
 
-case $1 in
+status() {
+        printf "%-50s" "Checking $NAME..."
+	        if [ -f $PIDFILE ]; then
+	            PID=`cat $PIDFILE`
+	            if [ -z "`ps axf | grep ${PID} | grep -v grep`" ]; then
+	                printf "%s\n" "Process dead but pidfile exists"
+	            else
+	                echo "Running, the PID is $PID"
+	            fi
+	        else
+	            printf "%s\n" "Service not running"
+	        fi
+}
 
-    restart)
-	action "Restarting $prog" /usr/bin/sv t $SERVICE_DIR
-	/usr/bin/sv u $SERVICE_DIR
-            ;;
-
-    sigalrm)
-	action "Sending ALRM signal to $prog" /usr/bin/sv a $SERVICE_DIR
-            ;;
-
-    sigcont)
-	action "Sending CONT signal to $prog" /usr/bin/sv c $SERVICE_DIR
-            ;;
-
-    sighup)
-	action "Sending HUP signal to $prog" /usr/bin/sv h $SERVICE_DIR
-            ;;
-
-    sigusr1)
-	action "Sending USR1 signal to $prog" /usr/bin/sv 1 $SERVICE_DIR
-            ;;
-
-    sigusr2)
-	action "Sending USR2 signal to $prog" /usr/bin/sv 2 $SERVICE_DIR
-            ;;
-
-    sigint)
-	action "Sending INT signal to $prog" /usr/bin/sv i $SERVICE_DIR
-            ;;
-
-    sigkill)
-	action "Sending KILL signal to $prog" /usr/bin/sv k $SERVICE_DIR
-            ;;
-
-    sigstop)
-	action "Sending STOP signal to $prog" /usr/bin/sv p $SERVICE_DIR
-            ;;
-
-    sigterm|condrestart)
-	action "Sending TERM signal to $prog" /usr/bin/sv t $SERVICE_DIR
-            ;;
-
-    status)
-	/usr/bin/sv status $SERVICE_DIR
-            ;;
-
-    start)
-        start $SERVICE_DIR
-            ;;
-
-    stop)
-        stop $SERVICE_DIR
-            ;;
-
-    svdisable)
-        svdisable $SERVICE_DIR
-            ;;
-
-    *)
-        echo $"usage: $0 {start|stop|restart|status|sigalrm|sigcont|sighup|sigint|sigkill|sigstop|sigterm|condrestart|sigusr1|sigusr2|svdisable}"
-        ;;
-
+case "$1" in
+  start)
+    start
+    ;;
+  stop)
+    stop
+    ;;
+  status)
+    status 
+    ;;
+  uninstall)
+    uninstall
+    ;;
+  restart)
+    stop
+    start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|status|restart|uninstall}"
 esac
+
+
