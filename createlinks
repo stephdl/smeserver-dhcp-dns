@@ -18,8 +18,9 @@ for  my $event (qw( dhcp-dns ))
     templates2events("/var/service/tinydns/root/data", $event);
 }
 
-safe_symlink("daemontools", "root/etc/rc.d/init.d/dhcp-dns");
-service_link_enhanced("dhcp-dns", "S85", "7");
-service_link_enhanced("dhcp-dns", "K25", "6");
-service_link_enhanced("dhcp-dns", "K25", "0");
-safe_symlink("/var/service/dhcp-dns/", "root/service/dhcp-dns");
+#creation of dhcp-dns service
+    safe_symlink("daemontools", "root/etc/rc.d/init.d/dhcp-dns");
+    service_link_enhanced("dhcp-dns", "S85", "7");
+    service_link_enhanced("dhcp-dns", "K25", "6");
+    service_link_enhanced("dhcp-dns", "K25", "0");
+    safe_symlink("/var/service/dhcp-dns/", "root/service/dhcp-dns");
