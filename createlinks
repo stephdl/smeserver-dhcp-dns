@@ -3,14 +3,15 @@
 use esmith::Build::CreateLinks qw(:all);
 
 
-#link to servi2adjust and template2expand
+#link to services2adjust and templates2expand
 for  my $event (qw( dhcp-dns ))
 {
     # services to launch on event
     safe_symlink("restart", "root/etc/e-smith/events/$event/services2adjust/dnscache");
     safe_symlink("sigusr1", "root/etc/e-smith/events/$event/services2adjust/tinydns");
     safe_symlink("restart", "root/etc/e-smith/events/$event/services2adjust/dhcpd");
-    
+    safe_symlink("restart", "root/etc/e-smith/events/$event/services2adjust/dhcp-dns");
+        
     # actions to perform
     safe_symlink("../actions/dnscache-change", "root/etc/e-smith/events/dhcp-change/S20dnscache-change");
 
