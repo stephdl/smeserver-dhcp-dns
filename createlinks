@@ -3,14 +3,15 @@
 use esmith::Build::CreateLinks qw(:all);
 
 
-#link to servi2adjust and template2expand
+#link to services2adjust and templates2expand
 for  my $event (qw( dhcp-dns ))
 {
     # services to launch on event
     safe_symlink("restart", "root/etc/e-smith/events/$event/services2adjust/dnscache");
     safe_symlink("sigusr1", "root/etc/e-smith/events/$event/services2adjust/tinydns");
     safe_symlink("restart", "root/etc/e-smith/events/$event/services2adjust/dhcpd");
-    
+    safe_symlink("restart", "root/etc/e-smith/events/$event/services2adjust/dhcp-dns");
+        
     # actions to perform
     safe_symlink("../actions/dnscache-change", "root/etc/e-smith/events/dhcp-change/S20dnscache-change");
 
@@ -18,8 +19,10 @@ for  my $event (qw( dhcp-dns ))
     templates2events("/var/service/tinydns/root/data", $event);
 }
 
-safe_symlink("daemontools", "root/etc/rc.d/init.d/dhcp-dns");
-service_link_enhanced("dhcp-dns", "S85", "7");
-service_link_enhanced("dhcp-dns", "K25", "6");
-service_link_enhanced("dhcp-dns", "K25", "0");
-safe_symlink("/var/service/dhcp-dns/", "root/service/dhcp-dns");
+#creation of dhcp-dns service
+    safe_symlink("daemontools", "root/etc/rc.d/init.d/dhcp-dns");
+    service_link_enhanced("dhcp-dns", "S85", "7");
+    service_link_enhanced("dhcp-dns", "K25", "6");
+    service_link_enhanced("dhcp-dns", "K25", "0");
+    safe_symlink("/var/service/dhcp-dns/", "root/service/dhcp-dns");
+                    
