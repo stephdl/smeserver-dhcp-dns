@@ -13,6 +13,9 @@ for  my $event (qw( dhcp-dns ))
     
     # actions to perform
     safe_symlink("../actions/dnscache-change", "root/etc/e-smith/events/dhcp-change/S20dnscache-change");
+
+    # Template to event
+    templates2events("/var/service/tinydns/root/data", $event);
 }
 
 safe_symlink("daemontools", "root/etc/rc.d/init.d/dhcp-dns");
