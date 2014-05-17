@@ -1,6 +1,6 @@
 %define name smeserver-dhcp-dns
 %define version 1.1.1
-%define release 8
+%define release 9
 
 Summary: contrib to update dynamically the dns data
 Name: %{name}
@@ -22,6 +22,9 @@ Implementation of some features arround dhcp to dynamically update dns data file
 This eliminates the 'pc-0001' etc. default names.
 
 %changelog
+* Sun May 18 2014 stephane de Labrusse <stephdl@de-labrusse.fr> 1.1.0-9
+- add a tinydns expand-template on event dhcp-dns
+
 * Tue May 13 2014 stephane de Labrusse <stephdl@de-labrusse.fr> 1.1.0-8
 - First release for SME Server 9.0
 - Thanks to John Crisp, Stefano Zamboni and Rick Jones
