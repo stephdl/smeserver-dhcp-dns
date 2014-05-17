@@ -13,7 +13,7 @@ for  my $event (qw( dhcp-dns ))
     safe_symlink("restart", "root/etc/e-smith/events/$event/services2adjust/dhcp-dns");
         
     # actions to perform
-    safe_symlink("../actions/dnscache-change", "root/etc/e-smith/events/dhcp-change/S20dnscache-change");
+    safe_symlink("../actions/dnscache-change", "root/etc/e-smith/events/$event/S20dnscache-change");
 
     # Template to event
     templates2events("/var/service/tinydns/root/data", $event);
