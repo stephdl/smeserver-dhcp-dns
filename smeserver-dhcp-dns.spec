@@ -13,7 +13,7 @@ Group: SMEserver/addon
 BuildRoot: %{_tmppath}/%{name}-buildroot
 BuildArchitectures: noarch
 BuildRequires: e-smith-devtools
-Requires: e-smith-release >= 9.0
+Requires: e-smith-release >= 8.0
 Requires: perl-Text-DHCPparse
 AutoReqProv: no
 
