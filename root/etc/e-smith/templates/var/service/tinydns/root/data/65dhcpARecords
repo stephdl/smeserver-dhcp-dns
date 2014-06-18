@@ -10,8 +10,9 @@
 
     # copy of dhcpd.leases file to /tmp because working directly on the original
     # is not a good idea
-    system "cat /var/lib/dhcpd/dhcpd.leases > /tmp/dhcpd.leases";
-      
+    use File::Copy;
+    copy('/var/lib/dhcpd/dhcpd.leases', '/tmp/dhcpd.leases');
+
     # now we parse the leases
     $return = leaseparse('/tmp/dhcpd.leases');
    
@@ -23,8 +24,8 @@
     foreach (keys %$return) {
         ($ip, $time, $mac, $name) = unpack("A17 A21 A19 A30", $return->{$_});
 
-        # sometimes $name is empty.. we want only non empty one
-        if ( (defined $name) && (defined $ip)) {
+        # when the dhcp lease is over $name is empty .. we want only non empty one
+         if ( $name ne "" ) {
             # we skip also ips already allocated
             unless (exists $allocated_ips{$ip})
             {
@@ -37,7 +38,6 @@
                 # Determine TTL
                 my $ttl = '';
                 $ttl = 0 unless ($ts <= time);
-
                 $OUT .= "=$name.$localdomain:$ip:$ttl:$endtai\n";
             }
             $allocated_ips{$ip} = 1;
