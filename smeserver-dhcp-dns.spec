@@ -87,13 +87,11 @@ perl createlinks
 %install
 rm -rf $RPM_BUILD_ROOT
 (cd root   ; find . -depth -print | cpio -dump $RPM_BUILD_ROOT)
-rm -f %{name}-%{version}-filelist
-/sbin/e-smith/genfilelist $RPM_BUILD_ROOT \ 
+/sbin/e-smith/genfilelist $RPM_BUILD_ROOT \
     --file /var/service/dhcp-dns/dhcp-dns 'attr(0750,root,root)' \
     --file /var/service/dhcp-dns/run 'attr(0750,root,root)' \
-    > %{name}-%{version}-filelist
-echo "%doc COPYING"  >> %{name}-%{version}-filelist
-
+    > %{name}-%{version}-%{release}-filelist
+echo "%doc COPYING" >> %{name}-%{version}-%{release}-filelist
 %clean
 cd ..
 rm -rf %{name}-%{version}
@@ -105,5 +103,5 @@ rm -rf %{name}-%{version}
 
 %postun
 
-%files -f %{name}-%{version}-filelist
+%files -f %{name}-%{version}-%{release}-filelist
 %defattr(-,root,root)
