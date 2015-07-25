@@ -13,7 +13,7 @@ Group: SMEserver/addon
 BuildRoot: %{_tmppath}/%{name}-buildroot
 BuildArchitectures: noarch
 BuildRequires: e-smith-devtools
-Requires: e-smith-release >= 9.0
+Requires: e-smith-release >= 8.0
 AutoReqProv: no
 
 %description
@@ -24,7 +24,7 @@ This eliminates the 'pc-0001' etc. default names.
 * Sat Jul 25 2015 stephane de Labrusse <stephdl@de-labrusse.fr> 1.2.0-1
 - enhancement following the bug [SME: 2388]
 - e-smith-tinydns-2.4.0_add_hostname_following_dhcpdleases_hostname.patch
-- waiting a release to the core, it is now a contrib for sme9
+- waiting a release to the core, it is now a contrib for sme8
 
 * Wed Jun 18 2014 stephane de Labrusse <stephdl@de-labrusse.fr> 1.1.2-1
 - correction of file 65dhcpARecords
