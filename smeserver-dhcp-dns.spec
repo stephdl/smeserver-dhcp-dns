@@ -1,5 +1,5 @@
 %define name smeserver-dhcp-dns
-%define version 1.1.2
+%define version 1.2.0
 %define release 1
 
 Summary: contrib to update dynamically the dns data
@@ -13,8 +13,7 @@ Group: SMEserver/addon
 BuildRoot: %{_tmppath}/%{name}-buildroot
 BuildArchitectures: noarch
 BuildRequires: e-smith-devtools
-Requires: e-smith-release >= 8.0
-Requires: perl-Text-DHCPparse
+Requires: e-smith-release >= 9.0
 AutoReqProv: no
 
 %description
@@ -22,6 +21,11 @@ Implementation of some features arround dhcp to dynamically update dns data file
 This eliminates the 'pc-0001' etc. default names.
 
 %changelog
+* Sat Jul 25 2015 stephane de Labrusse <stephdl@de-labrusse.fr> 1.2.0-1
+- enhancement following the bug [SME: 2388]
+- e-smith-tinydns-2.4.0_add_hostname_following_dhcpdleases_hostname.patch
+- waiting a release to the core, it is now a contrib for sme9
+
 * Wed Jun 18 2014 stephane de Labrusse <stephdl@de-labrusse.fr> 1.1.2-1
 - correction of file 65dhcpARecords
 
@@ -84,7 +88,10 @@ perl createlinks
 rm -rf $RPM_BUILD_ROOT
 (cd root   ; find . -depth -print | cpio -dump $RPM_BUILD_ROOT)
 rm -f %{name}-%{version}-filelist
-/sbin/e-smith/genfilelist $RPM_BUILD_ROOT > %{name}-%{version}-filelist
+/sbin/e-smith/genfilelist $RPM_BUILD_ROOT \ 
+    --file /var/service/dhcp-dns/dhcp-dns 'attr(0750,root,root)' \
+    --file /var/service/dhcp-dns/run 'attr(0750,root,root)' \
+    > %{name}-%{version}-filelist
 echo "%doc COPYING"  >> %{name}-%{version}-filelist
 
 %clean
@@ -100,6 +107,3 @@ rm -rf %{name}-%{version}
 
 %files -f %{name}-%{version}-filelist
 %defattr(-,root,root)
-%attr(750,root,root) /var/service/dhcp-dns/dhcp-dns
-%attr(750,root,root) /var/service/dhcp-dns/run
-

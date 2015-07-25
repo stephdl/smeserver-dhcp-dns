@@ -1,48 +1,136 @@
 {
-    # we need perl-Text-DHCPparse rpm from Dag's repo
-    use Text::DHCPparse;
-
-    # we need perl-Date-Manip to convert to a unix timestamp
-    use Date::Manip qw /UnixDate/;
-   
-    # we need perl-Time-TAI64 for timestamp conversion
+    use strict;
+    use warnings;
+    use esmith::Logger;
+    use esmith::ConfigDB;
+    use esmith::HostsDB;
     use Time::TAI64 qw /unixtai64/;
-
-    # copy of dhcpd.leases file to /tmp because working directly on the original
-    # is not a good idea
+    use Date::Manip qw /UnixDate/;
     use File::Copy;
-    copy('/var/lib/dhcpd/dhcpd.leases', '/tmp/dhcpd.leases');
+
+    my $DB = esmith::ConfigDB->open_ro or die ("Unable to open configuration database");
+    my $hosts = esmith::HostsDB->open_ro or die ("Unable to open Host database");
+
+    my $dhcpdns = $DB->get_prop('dhcp-dns','status') || 'disabled';
+    return '' if $dhcpdns ne 'enabled';
+
+    #we start a hash for name & ip
+    my %allocated_name = ();
+    my %allocated_ip_dhcplease = ();
+
+    #start a hash of all hosts in DB
+    my @hosts = $hosts->keys;
+    my %hostsdb;
+    @hostsdb{@hosts} = ();
+
+    # copy dhcpd.leases to /tmp
+    copy("/var/lib/dhcpd/dhcpd.leases","/tmp/tmpdhcpd.leases") 
+        or die ("Error dhcp-dns Service : Unable to copy the /var/lib/dhcpd/dhcpd.leases"); 
+
+    #we want to write in log
+    sub log2messages
+    {
+        my $message = shift;
+        tie *FH, 'esmith::Logger';
+        print FH "$message";
+        close FH;
+    }
+
+    #Text::DHCPparse forked because it doesn't allow to retrieve the end of lease
+    #Only the start is found by the leaseparse of DHCPparse.pm s/starts/ends
+    sub leaseparse 
+    {
+        my $logfile = shift;
+        my ( %list, $ip );
+        open FILE, $logfile or die;
+
+        while (<FILE>) 
+        {
+            next if /^#|^$/;
+            if (/^lease (\d+\.\d+\.\d+\.\d+)/) 
+            {
+                $ip = $1; 
+                $list{$ip} = sprintf("%-17s", $ip);
+            }
+            /^\s*hardware ethernet (.*);/ && ($list{$ip} .= sprintf("%-19s", $1));
+            /^\s*ends \d (.*);/ && ($list{$ip} .= sprintf("%-21s", $1));
+            /^\s*(abandoned).*/ && ($list{$ip} .= sprintf("%-19s", $1));
+            /^\s*client-hostname "(.*)";/ && ($list{$ip} .= sprintf("%-17s", $1));
+        }
+
+        close FILE;
+
+        # make all entries 74 characters long to format properly
+        foreach (keys %list) 
+        {
+            $list{$_} = sprintf("%-74s", $list{$_}) if (length$list{$_} < 76);
+        }
+
+       return \%list;
+    }
+
+    #hostname validator routine
+    sub namevalidator
+    {
+        my $local_domain = $DB->get_value('DomainName') or die ("Unable retrieve the DomainName property");
+        my $server_name  = $DB->get_value('SystemName') or die ("Unable retrieve the SystemName property");
+        my  $validator = shift;
+
+        if ($validator eq $server_name) {
+        log2messages("The hostname of this server ($server_name) is already in use with a different IP address in /var/lib/dhcpd/dhcpd.leases");
+        return 1;
+        }
+        elsif ($validator !~ /^[a-zA-Z0-9][a-zA-Z0-9-]*$/) {
+        log2messages("The hostname of the dhcp client ($validator) contains illegal characters in /var/lib/dhcpd/dhcpd.leases");
+        return 1;
+        }
+        elsif  (exists $hostsdb{lc "$validator\.$local_domain"}) {
+        log2messages("The hostname of the dhcp client ($validator) is already used in the hosts database");
+        return 1;
+        }
+        elsif   (exists $allocated_name{$validator}) {
+        log2messages("The hostname ($validator)  has already been assigned an IP address in /var/lib/dhcpd/dhcpd.leases");
+        return 1;
+        }
+        else {
+        return 0;
+        }
+    }
 
     # now we parse the leases
-    $return = leaseparse('/tmp/dhcpd.leases');
-   
-    # variable with local domain value (default is  mycompamy.local)
-    my $localdomain = get_local_domainname;
+    my $return = leaseparse('/tmp/tmpdhcpd.leases');
+    my ($ip,$time,$mac,$name);
+
+    # retrieve the local domain name
+    my $localdomain = $DB->get_value('DomainName') or die ("Unable retrieve the DomainName property");
 
     $OUT .= "# A records for dhcp hosts in $localdomain\n";
 
-    foreach (keys %$return) {
+    foreach (keys %$return) 
+    {
         ($ip, $time, $mac, $name) = unpack("A17 A21 A19 A30", $return->{$_});
 
-        # when the dhcp lease is over $name is empty .. we want only non empty one
-         if ( $name ne "" ) {
-            # we skip also ips already allocated
-            unless (exists $allocated_ips{$ip})
-            {
-                # Convert lease end time to the format expected as
-                # see:  http://cr.yp.to/djbdns/tinydns-data.html
-                my $ts = UnixDate($time, "%s");
-                my $endtai = unixtai64($ts);
-                $endtai =~ s/@//;
+        # we skip allocated ips & empty names
+        unless ((exists $allocated_ip_dhcplease{$ip}) || ( $name eq "" ))
+        {
+            # Convert lease end time to the format expected as
+            # see:  http://cr.yp.to/djbdns/tinydns-data.html
+            my $ts = UnixDate($time, "%s");
+            my $endtai = unixtai64($ts);
+            $endtai =~ s/@//;
 
-                # Determine TTL
-                my $ttl = '';
-                $ttl = 0 unless ($ts <= time);
-                $OUT .= "=$name.$localdomain:$ip:$ttl:$endtai\n";
-            }
-            $allocated_ips{$ip} = 1;
+            # Determine TTL
+            my $ttl = '';
+            $ttl = 0 unless ($ts <= time);
+
+            # display if the hostname is valid
+            $OUT .= "=$name.$localdomain:$ip:$ttl:$endtai\n" if (namevalidator("$name") ne '1');
         }
+
+        $allocated_ip_dhcplease{$ip} = 1;
+        $allocated_name{$name} ++;
     }
     # remove the temp file
-    system "rm -f /tmp/dhcpd.leases";
+    unlink "/tmp/tmpdhcpd.leases"
+      or log2messages("Error dhcp-dns Service : Unable to remove the /tmp/tmpdhcpd.leases");
 }

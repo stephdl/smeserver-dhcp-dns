@@ -1,4 +1,10 @@
 #!/usr/bin/perl
+use strict;
+use warnings;
+use esmith::ConfigDB;
+
+my $DB = esmith::ConfigDB->open_ro or die ("Unable to open configuration database");
+my $dhcpdns = $DB->get_prop('dhcp-dns','status') || 'disabled';
 
 my $lease_file = "/var/lib/dhcpd/dhcpd.leases";
 
@@ -6,11 +12,20 @@ my $lease_file = "/var/lib/dhcpd/dhcpd.leases";
 my $modtime = 0;
 
 # seconds to wait
-my $update_freq = 15;
+my $update_freq = 30;
+
+#we want to write in log
+sub log2messages
+   {
+        my $message = shift;
+        tie *FH, 'esmith::Logger';
+        print FH "$message";
+        close FH;
+   }
 
 ###########################################################################
 # Main Loop
-while (1) {
+while ($dhcpdns eq 'enabled') {
 
   # check the file's last updated time, if it's been changed, update
   # the DNS and save the modified time.  This will ALWAYS run once - on
@@ -19,9 +34,12 @@ while (1) {
   my @stats = stat ($lease_file);
   if ($stats[9] > $modtime) {
   
-  	$modtime = $stats[9];
+   $modtime = $stats[9];
+        system ("/usr/bin/sv 1 /service/tinydns") ==0
+            or log2messages('Error service dhcp-dns : Unable to restart /service/tinydns');
 
-        system ("/usr/bin/sv 1 /service/tinydns");
+        system ("/usr/bin/sv 1 /service/dnscache") ==0
+            or log2messages('Error service dhcp-dns : Unable to do restart /service/dnscache');
   }
 
   # wait till next check time
@@ -29,5 +47,3 @@ while (1) {
 
 } # end main
 ###########################################################################
-
-
