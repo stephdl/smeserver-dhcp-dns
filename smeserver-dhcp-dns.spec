@@ -1,6 +1,6 @@
 %define name smeserver-dhcp-dns
 %define version 1.2.0
-%define release 1
+%define release 2
 
 Summary: contrib to update dynamically the dns data
 Name: %{name}
@@ -21,6 +21,9 @@ Implementation of some features arround dhcp to dynamically update dns data file
 This eliminates the 'pc-0001' etc. default names.
 
 %changelog
+* Thu Jul 30 2015 stephane de Labrusse <stephdl@de-labrusse.fr> 1.2.0-2
+- finished lease are now prohibited
+
 * Sat Jul 25 2015 stephane de Labrusse <stephdl@de-labrusse.fr> 1.2.0-1
 - enhancement following the bug [SME: 2388]
 - e-smith-tinydns-2.4.0_add_hostname_following_dhcpdleases_hostname.patch
