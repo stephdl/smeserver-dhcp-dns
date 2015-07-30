@@ -119,9 +119,11 @@
             my $endtai = unixtai64($ts);
             $endtai =~ s/@//;
 
+            #we don't want finished lease
+            next if ($ts < time);
+
             # Determine TTL
-            my $ttl = '';
-            $ttl = 0 unless ($ts <= time);
+            my $ttl = 0;
 
             # display if the hostname is valid
             $OUT .= "=$name.$localdomain:$ip:$ttl:$endtai\n" if (namevalidator("$name") ne '1');
